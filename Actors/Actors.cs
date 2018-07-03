@@ -28,7 +28,7 @@ namespace Actors
         {
             try
             {
-                await this.StateManager.AddStateAsync(variable, value);
+                await this.StateManager.TryAddStateAsync(variable, value);
                 return "Variable added";
             }
             catch (Exception e)

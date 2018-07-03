@@ -66,8 +66,8 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium",              
-        ///        "value": 142                      
+        ///        "variable": "bloodSodium",              
+        ///        "value": "unknown"                     
         ///     }
         /// 
         /// - "actionId": string
@@ -107,7 +107,10 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             var response = await actor.AddVariableAsync(variable, value);
-            await PublishAsync(requestBody);
+            if (value != "unknown")
+            {
+                await PublishToAzureEventGridAsync(requestBody);
+            }
             return response;
         }
 
@@ -119,7 +122,7 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium"                  
+        ///        "variable": "bloodSodium"                  
         ///     }
         /// 
         /// - "actionId": string
@@ -151,7 +154,7 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium",              
+        ///        "variable": "bloodSodium",              
         ///        "value": 109                      
         ///     }
         /// 
@@ -193,7 +196,7 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             string response = await actor.SetValueAsync(variable, value);
-            await PublishAsync(requestBody);
+            await PublishToAzureEventGridAsync(requestBody);
             return response;
         }
         /// <summary>
@@ -204,7 +207,7 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium"                  
+        ///        "variable": "bloodSodium"                  
         ///     }
         /// 
         /// - "actionId": string
@@ -228,13 +231,12 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
-        public async Task<string> PublishAsync(JObject data)
+        public async Task<string> PublishToAzureEventGridAsync(JObject data)
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
             string uri = AzureEventGridTopicEndPoint;
             string topicSubject = (string)data.SelectToken("variable"); 
-            string jsonData = JsonConvert.SerializeObject(data);
 
             // Event data schema (Azure Event Grid)
             // https://docs.microsoft.com/en-us/azure/event-grid/post-to-custom-topic#event-data
@@ -242,9 +244,9 @@ namespace NanoserviceAPI.Controllers
             dynamic requestBody = new ExpandoObject();
             requestBody.id = "notSet";
             requestBody.eventType = "notSet";
-            requestBody.subject = topicSubject; // e.g., BloodSodium
+            requestBody.subject = topicSubject; // e.g., bloodSodium
             requestBody.eventTime = DateTime.Now;
-            requestBody.data = jsonData;
+            requestBody.data = data;
             requestBody.dataVersion = "v1";
 
             List<dynamic> requestBodyArray = new List<dynamic>();
