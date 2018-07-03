@@ -12,6 +12,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using RESTfulAPI;
+using System.Collections.Generic;
 
 namespace NanoserviceAPI.Controllers
 {
@@ -239,17 +240,20 @@ namespace NanoserviceAPI.Controllers
             // https://docs.microsoft.com/en-us/azure/event-grid/post-to-custom-topic#event-data
 
             dynamic requestBody = new ExpandoObject();
-            requestBody.id = "";
-            requestBody.eventType = "";
+            requestBody.id = "notSet";
+            requestBody.eventType = "notSet";
             requestBody.subject = topicSubject; // e.g., BloodSodium
             requestBody.eventTime = DateTime.Now;
             requestBody.data = jsonData;
-            requestBody.dataVersion = "";
+            requestBody.dataVersion = "v1";
+
+            List<dynamic> requestBodyArray = new List<dynamic>();
+            requestBodyArray.Add(requestBody);
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("aeg-sas-key", AzureEventGridTopicAccessKey);
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+            string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
             request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
             var response = await client.SendAsync(request);
             string stringResponseContent = await response.Content.ReadAsStringAsync();
