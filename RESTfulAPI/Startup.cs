@@ -44,8 +44,8 @@ namespace RESTfulAPI
                     },
                     License = new License
                     {
-                        Name = "MIT License",
-                        Url = "https://opensource.org/licenses/MIT"
+                        Name = "MIT License (open source GitHub project)",
+                        Url = "https://github.com/yshin1209/Nanoservice"
                     }
                 });
 
