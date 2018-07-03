@@ -19,15 +19,67 @@ namespace NanoserviceAPI.Controllers
     [Produces("application/json")]
     public class ActorsController : Controller
     {
+        /// <summary>
+        /// Creates an actor.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475" 
+        ///     }
+        ///     
+        /// - "actionId": string
+        /// 
+        /// To try this service:
+        ///
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see "Actor created", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// 
+        /// For more information about Service Fabric Actors, please see:
+        /// https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-actors-introduction
+        /// </remarks>
         [HttpPost]
         [Route("createActor")]
-        public Task<string> CreateActor([FromBody] JObject requestBody)
+        public string CreateActor([FromBody] JObject requestBody)
         {
-            var actorId = (string)requestBody.SelectToken("actorId");
-            var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            return Task.FromResult<string>("Actor created");
+            try
+            {
+                var actorId = (string)requestBody.SelectToken("actorId");
+                var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
+                return ("Actor created");
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
+        /// <summary>
+        /// Adds a variable to an actor.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475",    
+        ///        "variable": "sodium",              
+        ///        "value": 142                      
+        ///     }
+        /// 
+        /// - "actionId": string
+        /// - "variable": string
+        /// - "value": string, int, float, bool
+        /// 
+        /// To try this service:
+        /// 
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable added", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// </remarks>
         [HttpPost]
         [Route("addVariable")]
         public async Task<string> AddVariable([FromBody] JObject requestBody)
@@ -58,6 +110,62 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
+        /// <summary>
+        /// Gets the value of a variable.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475",    
+        ///        "variable": "sodium"                  
+        ///     }
+        /// 
+        /// - "actionId": string
+        /// - "variable": string
+        /// 
+        /// To try this service:
+        /// 
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see the value retrieved, your request is processed successfully. Otherwise, you will get an error messsage.
+        /// </remarks>
+        [HttpPost]
+        [Route("getValue")]
+        public async Task<dynamic> GetValue([FromBody] JObject requestBody)
+        {
+            var actorId = (string)requestBody.SelectToken("actorId");
+            var variable = (string)requestBody.SelectToken("variable");
+            var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
+            dynamic response = await actor.GetValueAsync(variable);
+            return response;
+        }
+
+        /// <summary>
+        /// Sets the value of a variable.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475",    
+        ///        "variable": "sodium",              
+        ///        "value": 109                      
+        ///     }
+        /// 
+        /// - "actionId": string
+        /// - "variable": string
+        /// - "value": string, int, float, bool
+        /// 
+        /// To try this service:
+        /// 
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// </remarks>
+
         [HttpPost]
         [Route("setValue")]
         public async Task<string> SetValue ([FromBody] JObject requestBody)
@@ -87,18 +195,27 @@ namespace NanoserviceAPI.Controllers
             await PublishAsync(requestBody);
             return response;
         }
-
-        [HttpPost]
-        [Route("getValue")]
-        public async Task<dynamic> GetValue([FromBody] JObject requestBody)
-        {
-            var actorId = (string)requestBody.SelectToken("actorId");
-            var variable = (string)requestBody.SelectToken("variable");
-            var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            dynamic response = await actor.GetValueAsync(variable);
-            return response;
-        }
-
+        /// <summary>
+        /// Removes a variable from an actor.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475",    
+        ///        "variable": "sodium"                  
+        ///     }
+        /// 
+        /// - "actionId": string
+        /// - "variable": string
+        /// 
+        /// To try this service:
+        /// 
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable removed", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// </remarks>
         [HttpPost]
         [Route("removeVariable")]
         public async Task<string> RemoveVariable([FromBody] JObject requestBody)
@@ -110,13 +227,12 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
-
-        public async Task<string> PublishAsync(dynamic data)
+        public async Task<string> PublishAsync(JObject data)
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
             string uri = AzureEventGridTopicEndPoint;
-            string topicSubject = data.stateVariableName;
+            string topicSubject = (string)data.SelectToken("variable"); 
             string jsonData = JsonConvert.SerializeObject(data);
 
             // Event data schema (Azure Event Grid)

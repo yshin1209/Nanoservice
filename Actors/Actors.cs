@@ -4,6 +4,8 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 using Actors.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace Actors
 {
@@ -24,26 +26,56 @@ namespace Actors
 
         async Task<string> IActors.AddVariableAsync(string variable, dynamic value)
         {
-            await this.StateManager.AddStateAsync(variable, value);
-            return "Variable added";
+            try
+            {
+                await this.StateManager.AddStateAsync(variable, value);
+                return "Variable added";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
         async Task<string> IActors.SetValueAsync(string variable, dynamic value)
         {
-            await this.StateManager.SetStateAsync(variable, value);
-            return "Value updated";
+            try
+            {
+                await this.StateManager.SetStateAsync(variable, value);
+                return "Value set";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+
         }
 
         async Task<dynamic> IActors.GetValueAsync(string variable)
         {
-            dynamic value = await this.StateManager.GetStateAsync<dynamic>(variable);
-            return value;
+            try
+            {
+                var value = await this.StateManager.GetStateAsync<dynamic>(variable);
+                return value;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
         async Task<string> IActors.RemoveVariableAsync(string variable)
         {
-            await this.StateManager.RemoveStateAsync(variable);
-            return "Variable removed";
+            try
+            {
+                await this.StateManager.RemoveStateAsync(variable);
+                return "Variable removed";
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+
         }
     }
 }
