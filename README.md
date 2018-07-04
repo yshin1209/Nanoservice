@@ -1,4 +1,4 @@
-# NANOSERVICES: A NEW COMPUTING PARADIGM FOR DISTRIBUTED AND ADAPTIVE PERSONALIZED MEDICINE
+# NanoServices: A New Computing Paradigm for Distributed and Adaptive Personalized Medicine
 
 [UConn Computational and Systems Lab](https://csml.uconn.edu)
 
