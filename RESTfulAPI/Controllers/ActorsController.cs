@@ -12,6 +12,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using RESTfulAPI;
+using System.Collections.Generic;
 
 namespace NanoserviceAPI.Controllers
 {
@@ -66,7 +67,7 @@ namespace NanoserviceAPI.Controllers
         ///     {
         ///        "actorId": "patient032904475",    
         ///        "variable": "bloodSodium",              
-        ///        "value": 142                      
+        ///        "value": "unknown"                     
         ///     }
         /// 
         /// - "actionId": string
@@ -106,7 +107,7 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             var response = await actor.AddVariableAsync(variable, value);
-            await PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
+            await PublishAsync(requestBody);
             return response;
         }
 
@@ -224,17 +225,46 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             string response = await actor.SetValueAsync(variable, value);
-            await PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
+            await PublishAsync(requestBody);
+            return response;
+        }
+        /// <summary>
+        /// Removes a variable from an actor.
+        /// </summary>
+        /// <remarks>
+        /// Sample request body (requestBody):
+        ///
+        ///     {
+        ///        "actorId": "patient032904475",    
+        ///        "variable": "sodium"                  
+        ///     }
+        /// 
+        /// - "actionId": string
+        /// - "variable": string
+        /// 
+        /// To try this service:
+        /// 
+        /// 1. Click [Try it out] button (white).
+        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 3. Click [Execute] button (blue).
+        /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable removed", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// </remarks>
+        [HttpPost]
+        [Route("removeVariable")]
+        public async Task<string> RemoveVariable([FromBody] JObject requestBody)
+        {
+            var actorId = (string)requestBody.SelectToken("actorId");
+            var variable = (string)requestBody.SelectToken("variable");
+            var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
+            string response = await actor.RemoveVariableAsync(variable);
             return response;
         }
 
-
-        public async Task<string> PublishToAzureEventGridAsync(JObject data)
+        public async Task<string> PublishAsync(JObject data)
         {
             string AzureEventGridTopicEndPointUri = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
             string topicSubject = (string)data.SelectToken("variable"); 
-            string jsonData = JsonConvert.SerializeObject(data);
 
             // Event data schema (Azure Event Grid)
             // https://docs.microsoft.com/en-us/azure/event-grid/post-to-custom-topic#event-data
@@ -242,14 +272,17 @@ namespace NanoserviceAPI.Controllers
             dynamic requestBody = new ExpandoObject();
             requestBody.id = "";
             requestBody.eventType = "";
-            requestBody.subject = topicSubject; // e.g., bloodSodium
+            requestBody.subject = topicSubject; // e.g., BloodSodium
             requestBody.eventTime = DateTime.Now;
-            requestBody.data = jsonData;
-            requestBody.dataVersion = "";
+            requestBody.data = data;
+            requestBody.dataVersion = "v1";
+
+            List<dynamic> requestBodyArray = new List<dynamic>();
+            requestBodyArray.Add(requestBody);
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("aeg-sas-key", AzureEventGridTopicAccessKey);
-            var request = new HttpRequestMessage(HttpMethod.Post, AzureEventGridTopicEndPointUri);
+            var request = new HttpRequestMessage(HttpMethod.Post, uri);
             string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
             request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
             var response = await client.SendAsync(request);
