@@ -8,10 +8,7 @@ using Newtonsoft.Json;
 using System.Dynamic;
 using System.Net.Http;
 using System.Text;
-using System.IO;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
-using RESTfulAPI;
 using System.Collections.Generic;
 
 namespace NanoserviceAPI.Controllers
@@ -35,7 +32,7 @@ namespace NanoserviceAPI.Controllers
         /// To try this service:
         ///
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Actor created", your request is processed successfully. Otherwise, you will get an error messsage.
         /// 
@@ -77,7 +74,7 @@ namespace NanoserviceAPI.Controllers
         /// To try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable added", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -131,7 +128,7 @@ namespace NanoserviceAPI.Controllers
         /// To try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see the value retrieved, your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -165,7 +162,7 @@ namespace NanoserviceAPI.Controllers
         /// To try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -216,7 +213,7 @@ namespace NanoserviceAPI.Controllers
         /// To try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable removed", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
