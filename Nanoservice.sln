@@ -9,7 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Actors", "Actors\Actors.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Actors.Interfaces", "Actors.Interfaces\Actors.Interfaces.csproj", "{0A98B0CC-EE65-4C2C-8CB9-467375839882}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTfulAPI", "RESTfulAPI\RESTfulAPI.csproj", "{50847303-7A5B-4EDC-83E9-B5A3EB5E4647}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RESTfulAPI", "RESTfulAPI\RESTfulAPI.csproj", "{50847303-7A5B-4EDC-83E9-B5A3EB5E4647}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureFunction", "AzureFunction", "{FFD57A6C-DB77-4B1D-B7F7-52817DD06C5F}"
+	ProjectSection(SolutionItems) = preProject
+		HyponatremiaDDx.cs = HyponatremiaDDx.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
