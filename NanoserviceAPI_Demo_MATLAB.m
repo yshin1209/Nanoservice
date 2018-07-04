@@ -1,5 +1,5 @@
 % NanoService API MATLAB Demo
-% Yong-Jun Shin
+% Yong-Jun Shin (2018)
 
 %% Step 1: Create an actor (patient actor)
 % Azure Service Fabric  https://azure.microsoft.com/en-us/services/service-fabric/
