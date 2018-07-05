@@ -193,7 +193,7 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             string response = await actor.SetValueAsync(variable, value);
-            await PublishToAzureEventGridAsync(requestBody);
+            await PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
             return response;
         }
         /// <summary>
