@@ -8,10 +8,8 @@ using Newtonsoft.Json;
 using System.Dynamic;
 using System.Net.Http;
 using System.Text;
-using System.IO;
 using Newtonsoft.Json.Linq;
-using System.Diagnostics;
-using RESTfulAPI;
+using System.Collections.Generic;
 
 namespace NanoserviceAPI.Controllers
 {
@@ -31,10 +29,10 @@ namespace NanoserviceAPI.Controllers
         ///     
         /// - "actionId": string
         /// 
-        /// To try this service:
+        /// Try this service:
         ///
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Actor created", your request is processed successfully. Otherwise, you will get an error messsage.
         /// 
@@ -65,18 +63,18 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium",              
-        ///        "value": 142                      
+        ///        "variable": "bloodSodium",              
+        ///        "value": "unknown"                     
         ///     }
         /// 
         /// - "actionId": string
         /// - "variable": string
         /// - "value": string, int, float, bool
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable added", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -106,7 +104,10 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             var response = await actor.AddVariableAsync(variable, value);
-            await PublishAsync(requestBody);
+            if (value != "unknown")
+            {
+                await PublishToAzureEventGridAsync(requestBody);
+            }
             return response;
         }
 
@@ -118,16 +119,16 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium"                  
+        ///        "variable": "bloodSodium"                  
         ///     }
         /// 
         /// - "actionId": string
         /// - "variable": string
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see the value retrieved, your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -150,7 +151,7 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium",              
+        ///        "variable": "bloodSodium",              
         ///        "value": 109                      
         ///     }
         /// 
@@ -158,10 +159,10 @@ namespace NanoserviceAPI.Controllers
         /// - "variable": string
         /// - "value": string, int, float, bool
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -192,7 +193,7 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             string response = await actor.SetValueAsync(variable, value);
-            await PublishAsync(requestBody);
+            await PublishToAzureEventGridAsync(requestBody);
             return response;
         }
         /// <summary>
@@ -203,16 +204,16 @@ namespace NanoserviceAPI.Controllers
         ///
         ///     {
         ///        "actorId": "patient032904475",    
-        ///        "variable": "sodium"                  
+        ///        "variable": "bloodSodium"                  
         ///     }
         /// 
         /// - "actionId": string
         /// - "variable": string
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Vaule | Model" textbox (white). A sample request body is shown above.
+        /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable removed", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
@@ -227,29 +228,34 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
-        public async Task<string> PublishAsync(JObject data)
+        public async Task<string> PublishToAzureEventGridAsync(JObject data)
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
+            string publisherBaseUri = "http://csmlab6.uconn.edu";
             string uri = AzureEventGridTopicEndPoint;
-            string topicSubject = (string)data.SelectToken("variable"); 
-            string jsonData = JsonConvert.SerializeObject(data);
+            string topicSubject = (string)data.SelectToken("variable");
+
+            data.Add("publisherBaseUri", publisherBaseUri);
 
             // Event data schema (Azure Event Grid)
             // https://docs.microsoft.com/en-us/azure/event-grid/post-to-custom-topic#event-data
 
             dynamic requestBody = new ExpandoObject();
-            requestBody.id = "";
-            requestBody.eventType = "";
-            requestBody.subject = topicSubject; // e.g., BloodSodium
+            requestBody.id = "notSet";
+            requestBody.eventType = "notSet";
+            requestBody.subject = topicSubject; // e.g., bloodSodium
             requestBody.eventTime = DateTime.Now;
-            requestBody.data = jsonData;
-            requestBody.dataVersion = "";
+            requestBody.data = data;
+            requestBody.dataVersion = "v1";
+
+            List<dynamic> requestBodyArray = new List<dynamic>();
+            requestBodyArray.Add(requestBody);
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("aeg-sas-key", AzureEventGridTopicAccessKey);
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+            string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
             request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
             var response = await client.SendAsync(request);
             string stringResponseContent = await response.Content.ReadAsStringAsync();

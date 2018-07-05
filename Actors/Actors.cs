@@ -28,7 +28,7 @@ namespace Actors
         {
             try
             {
-                await this.StateManager.AddStateAsync(variable, value);
+                await this.StateManager.TryAddStateAsync(variable, value);
                 return "Variable added";
             }
             catch (Exception e)
@@ -37,12 +37,13 @@ namespace Actors
             }
         }
 
-        async Task<string> IActors.SetValueAsync(string variable, dynamic value)
+
+        async Task<string> IActors.RemoveVariableAsync(string variable)
         {
             try
             {
-                await this.StateManager.SetStateAsync(variable, value);
-                return "Value set";
+                await this.StateManager.RemoveStateAsync(variable);
+                return "Variable removed";
             }
             catch (Exception e)
             {
@@ -64,12 +65,12 @@ namespace Actors
             }
         }
 
-        async Task<string> IActors.RemoveVariableAsync(string variable)
+        async Task<string> IActors.SetValueAsync(string variable, dynamic value)
         {
             try
             {
-                await this.StateManager.RemoveStateAsync(variable);
-                return "Variable removed";
+                await this.StateManager.SetStateAsync(variable, value);
+                return "Value set";
             }
             catch (Exception e)
             {
@@ -77,5 +78,6 @@ namespace Actors
             }
 
         }
+
     }
 }

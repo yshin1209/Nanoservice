@@ -8,8 +8,7 @@ namespace Actors.Interfaces
     {
         Task<string> AddVariableAsync(string variable, dynamic value);
         Task<string> RemoveVariableAsync(string variable);
-        Task<string> SetValueAsync(string variable, dynamic value);
         Task<dynamic> GetValueAsync(string variable);
-
+        Task<string> SetValueAsync(string variable, dynamic value);
     }
 }
