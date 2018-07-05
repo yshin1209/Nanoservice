@@ -29,7 +29,7 @@ namespace NanoserviceAPI.Controllers
         ///     
         /// - "actionId": string
         /// 
-        /// To try this service:
+        /// Try this service:
         ///
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
@@ -71,7 +71,7 @@ namespace NanoserviceAPI.Controllers
         /// - "variable": string
         /// - "value": string, int, float, bool
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
@@ -125,7 +125,7 @@ namespace NanoserviceAPI.Controllers
         /// - "actionId": string
         /// - "variable": string
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
@@ -159,7 +159,7 @@ namespace NanoserviceAPI.Controllers
         /// - "variable": string
         /// - "value": string, int, float, bool
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
@@ -210,7 +210,7 @@ namespace NanoserviceAPI.Controllers
         /// - "actionId": string
         /// - "variable": string
         /// 
-        /// To try this service:
+        /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
