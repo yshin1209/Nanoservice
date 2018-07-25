@@ -234,8 +234,8 @@ namespace NanoserviceAPI.Controllers
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
-            // string publisherBaseUri = "http://nanoservice.eastus.cloudapp.azure.com/";
-            string publisherBaseUri = "http://csmlab7.uconn.edu";
+            string publisherBaseUri = "http://nanoservice.eastus.cloudapp.azure.com/";
+            //string publisherBaseUri = "http://csmlab7.uconn.edu";
             string uri = AzureEventGridTopicEndPoint;
             string topicSubject = (string)data.SelectToken("variable");
 
