@@ -56,7 +56,7 @@ namespace NanoserviceAPI.Controllers
         }
 
         /// <summary>
-        /// Adds a variable to an actor.
+        /// Adds a variable to an actor. Returns true if the value was successfully added and false if an actor state with the same name already exists.
         /// </summary>
         /// <remarks>
         /// Sample request body (requestBody):
@@ -79,15 +79,15 @@ namespace NanoserviceAPI.Controllers
         /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable added", your request is processed successfully. Otherwise, you will get an error messsage.
         /// </remarks>
         [HttpPost]
-        [Route("addVariable")]
-        public async Task<string> AddVariable([FromBody] JObject requestBody)
+        [Route("tryAddVariable")]
+        public async Task<dynamic> TryAddVariable([FromBody] JObject requestBody)
         {
             var actorId = (string) requestBody.SelectToken("actorId");
             var variable = (string) requestBody.SelectToken("variable");
             JTokenType valueType = requestBody.SelectToken("value").Type;
-            dynamic value = "initial value"; // initialize dynamic type value
+            dynamic value = "arbitrary value"; // initialize dynamic type value
             switch (valueType)
-            {
+            {   //Float should come before Int to handle "0"
                 case JTokenType.Float:
                     value = (float)requestBody.SelectToken("value");
                     break;
@@ -103,11 +103,7 @@ namespace NanoserviceAPI.Controllers
             }
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            var response = await actor.AddVariableAsync(variable, value);
-            /*if (value != "unknown")
-            {
-                await PublishToAzureEventGridAsync(requestBody);
-            }*/
+            var response = await actor.TryAddVariableAsync(variable, value);
             return response;
         }
 
@@ -178,7 +174,10 @@ namespace NanoserviceAPI.Controllers
             JTokenType valueType = requestBody.SelectToken("value").Type;
             dynamic value = "any value"; // initialize dynamic type value
             switch (valueType)
-            {
+            {   //Float should come before Int to handle "0"
+                case JTokenType.Float:
+                    value = (float)requestBody.SelectToken("value");
+                    break;
                 case JTokenType.Boolean:
                     value = (bool)requestBody.SelectToken("value");
                     break;
@@ -187,9 +186,6 @@ namespace NanoserviceAPI.Controllers
                     break;
                 case JTokenType.String:
                     value = (string)requestBody.SelectToken("value");
-                    break;
-                case JTokenType.Float:
-                    value = (float)requestBody.SelectToken("value");
                     break;
             }
 
@@ -234,8 +230,8 @@ namespace NanoserviceAPI.Controllers
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
-            string publisherBaseUri = "http://nanoservice.eastus.cloudapp.azure.com/";
-            //string publisherBaseUri = "http://csmlab7.uconn.edu";
+            //string publisherBaseUri = "http://nanoservice.eastus.cloudapp.azure.com/";
+            string publisherBaseUri = "http://csmlab7.uconn.edu";
             string uri = AzureEventGridTopicEndPoint;
             string topicSubject = (string)data.SelectToken("variable");
 

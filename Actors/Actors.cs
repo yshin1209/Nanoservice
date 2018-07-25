@@ -24,12 +24,12 @@ namespace Actors
             return base.OnActivateAsync();
         }
 
-        async Task<string> IActors.AddVariableAsync(string variable, dynamic value)
+        async Task<dynamic> IActors.TryAddVariableAsync(string variable, dynamic value)
         {
             try
             {
-                await this.StateManager.TryAddStateAsync(variable, value);
-                return "Variable added";
+                var result = await this.StateManager.TryAddStateAsync(variable, value);
+                return result;
             }
             catch (Exception e)
             {
