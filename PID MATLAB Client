@@ -6,9 +6,8 @@ clc
 clear all
 close all
 timePaused = 0;             % time paused between each iteration in second
-actorId = 'actor11';        % new Service Fabric Actor ID
+actorId = 'actor12';        % new Service Fabric Actor ID
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
-tryAddVariable (actorId, 'r', r(1));  % add (if not yet added) the Nanoservice variable to the actor
 N = length(r);              % number of iteration
 timeCom = zeros(N,1);       % time for the round-trip between the client and the cloud
 
@@ -22,15 +21,15 @@ u = zeros(N,1);                     % control signal u
 tryAddVariable (actorId, 'u', 0);   % add (if not yet added) the Nanoservice variable to the actor
 setValue (actorId, 'u', 0);         % set the Nanoservice variable value
 
-Kp = 1.1;                           % the proportional parameter Kp
+Kp = 0.4;                           % the proportional parameter Kp
 tryAddVariable (actorId, 'Kp', Kp); % add (if not yet added) the Nanoservice variable to the actor
 setValue (actorId, 'Kp', Kp);       % set the Nanoservice variable value
 
-Ki = 0.4;                           % the integral parameter Ki
+Ki = 0.2;                           % the integral parameter Ki
 tryAddVariable (actorId, 'Ki', Ki); % add (if not yet added) the Nanoservice variable to the actor
 setValue (actorId, 'Ki', Ki);       % set the Nanoservice variable value
 
-Kd = 0.2;                           % the derivative parameter Kd
+Kd = 0.1;                           % the derivative parameter Kd
 tryAddVariable (actorId, 'Kd', Kd); % add (if not yet added) the Nanoservice variable to the actor
 setValue (actorId, 'Kd', Kd);       % set the Nanoservice variable value
 
