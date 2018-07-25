@@ -56,7 +56,7 @@ namespace NanoserviceAPI.Controllers
         }
 
         /// <summary>
-        /// Adds a variable to an actor. Returns true if the value was successfully added and false if an actor state with the same name already exists.
+        /// Adds a variable to an actor. 
         /// </summary>
         /// <remarks>
         /// Sample request body (requestBody):
@@ -76,7 +76,7 @@ namespace NanoserviceAPI.Controllers
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
-        /// 4. Check "Response body" (ignore "Code" for now). If you see "Variable added", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// 4. Check "Response body" (ignore "Code" for now). Returns true if the value was successfully added and false if an actor state with the same name already exists.
         /// </remarks>
         [HttpPost]
         [Route("tryAddVariable")]
