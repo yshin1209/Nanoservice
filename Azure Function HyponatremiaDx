@@ -30,7 +30,6 @@ public async static void Run(JObject eventGridEvent, TraceWriter log)
     string firstJsonRequestBody = JsonConvert.SerializeObject(firstRequestBody);
     firstRequest.Content = new StringContent(firstJsonRequestBody, Encoding.UTF8, "application/json");
     var firstResponse = await client.SendAsync(firstRequest);
-
     string setValueUri = publisherBaseUri + "/setValue";    
     var secondRequest = new HttpRequestMessage(HttpMethod.Post, setValueUri);
     dynamic secondRequestBody = new ExpandoObject();
