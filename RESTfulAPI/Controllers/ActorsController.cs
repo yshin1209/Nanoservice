@@ -85,9 +85,12 @@ namespace NanoserviceAPI.Controllers
             var actorId = (string) requestBody.SelectToken("actorId");
             var variable = (string) requestBody.SelectToken("variable");
             JTokenType valueType = requestBody.SelectToken("value").Type;
-            dynamic value = "any value"; // initialize dynamic type value
+            dynamic value = "initial value"; // initialize dynamic type value
             switch (valueType)
             {
+                case JTokenType.Float:
+                    value = (float)requestBody.SelectToken("value");
+                    break;
                 case JTokenType.Boolean:
                     value = (bool)requestBody.SelectToken("value");
                     break;
@@ -97,17 +100,14 @@ namespace NanoserviceAPI.Controllers
                 case JTokenType.String:
                     value = (string)requestBody.SelectToken("value");
                     break;
-                case JTokenType.Float:
-                    value = (float)requestBody.SelectToken("value");
-                    break;
             }
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             var response = await actor.AddVariableAsync(variable, value);
-            if (value != "unknown")
+            /*if (value != "unknown")
             {
                 await PublishToAzureEventGridAsync(requestBody);
-            }
+            }*/
             return response;
         }
 
@@ -140,7 +140,9 @@ namespace NanoserviceAPI.Controllers
             var variable = (string)requestBody.SelectToken("variable");
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             dynamic response = await actor.GetValueAsync(variable);
-            return response;
+            dynamic returnObj = new ExpandoObject();
+            returnObj.value = response;
+            return returnObj;
         }
 
         /// <summary>
@@ -193,7 +195,7 @@ namespace NanoserviceAPI.Controllers
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
             string response = await actor.SetValueAsync(variable, value);
-            await PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
+            PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
             return response;
         }
         /// <summary>
@@ -228,7 +230,7 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
-        public async Task<string> PublishToAzureEventGridAsync(JObject data)
+        public void PublishToAzureEventGridAsync(JObject data)
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
@@ -257,9 +259,7 @@ namespace NanoserviceAPI.Controllers
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
             string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
             request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
-            var response = await client.SendAsync(request);
-            string stringResponseContent = await response.Content.ReadAsStringAsync();
-            return stringResponseContent;
+            var response = client.SendAsync(request);
         }
     }
 }
