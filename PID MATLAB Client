@@ -21,6 +21,8 @@ setValue (actorId, 'x', x(1), true); % set the Nanoservice variable value
 u = zeros(N,1);             % control signal u
 setValue (actorId, 'u', u(1), false); % set the Nanoservice variable value
 
+% You can tune Kp, Ki, and Kd for better performance
+
 Kp = 0.14;                  % the proportional parameter Kp
 setValue (actorId, 'Kp', Kp, false);  % set the Nanoservice variable value
 
