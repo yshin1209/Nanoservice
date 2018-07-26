@@ -8,7 +8,6 @@ close all
 timePaused = 0;             % time paused between each iteration in second
 actorId = 'actor11';        % new Service Fabric Actor ID
 
-
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
 setValue (actorId, 'r', r(1), false); % set the Nanoservice variable value
 
