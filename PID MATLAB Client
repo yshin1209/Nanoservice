@@ -6,7 +6,7 @@ clc
 clear all
 close all
 timePaused = 0;             % time paused between each iteration in second
-actorId = 'actor2';         % new Service Fabric Actor ID
+actorId = 'actor2';        % new Service Fabric Actor ID
 
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
 setValue (actorId, 'r', r(1), false); % set the Nanoservice variable value
@@ -22,24 +22,25 @@ u = zeros(N,1);             % control signal u
 setValue (actorId, 'u', u(1), false); % set the Nanoservice variable value
 
 % You can tune Kp, Ki, and Kd for better performance
-Kp = 0.2;                   % the proportional parameter Kp
+Kp = 0.2;                  % the proportional parameter Kp
 setValue (actorId, 'Kp', Kp, false);  % set the Nanoservice variable value
- 
-Ki = 0.12;                  % the integral parameter Ki
+
+Ki = 0.12;                   % the integral parameter Ki
 setValue (actorId, 'Ki', Ki, false);  % set the Nanoservice variable value
 
-Kd = 0.1;                   % the derivative parameter Kd
+Kd = 0.1;                  % the derivative parameter Kd
 setValue (actorId, 'Kd', Kd, false);  % set the Nanoservice variable value
 
 setValue (actorId, 'previousError', 0, false);  % set the Nanoservice variable value
 setValue (actorId, 'sumError', 0, false);  % set the Nanoservice variable value
 
-for n= 2:N
-    pause (timePaused); % default = 0 sec
+
+for n= 2:N                  % discrete time index n
+    pause (timePaused);     % default = 0 sec
     
-    % add disturbance with magnitude 50 to x at time > 60
+    % add disturbance with magnitude 50 to x at n > 60
     if n > 60
-        d(n) = 50;  % disturbance magnitude
+        d(n) = 50;          % disturbance magnitude
     else d(n) = 0;
     end
     
