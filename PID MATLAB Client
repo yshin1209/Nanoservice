@@ -1,4 +1,4 @@
-% PID (Proportional-Integral_Derivative) web service client
+% PID (Proportional-Integral_Derivative) Nanoservice client
 % Yong-Jun Shin (2018)
 % For more information, please visit
 % https://github.com/yshin1209/Nanoservice
@@ -6,38 +6,34 @@ clc
 clear all
 close all
 timePaused = 0;             % time paused between each iteration in second
-actorId = 'actor12';        % new Service Fabric Actor ID
+actorId = 'actor11';        % new Service Fabric Actor ID
+
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
+setValue (actorId, 'r', r(1), false); % set the Nanoservice variable value
+
 N = length(r);              % number of iteration
 timeCom = zeros(N,1);       % time for the round-trip between the client and the cloud
-
 d = zeros(N,1);             % disturbance signal d
 
-x = zeros(N,1);                     % output (measured) signal x
-tryAddVariable (actorId, 'x', 0);   % add (if not yet added) the Nanoservice variable to the actor
-setValue (actorId, 'x', 0);         % set the Nanoservice variable value
+x = zeros(N,1);             % output (measured) signal x
+setValue (actorId, 'x', x(1), true); % set the Nanoservice variable value
 
-u = zeros(N,1);                     % control signal u
-tryAddVariable (actorId, 'u', 0);   % add (if not yet added) the Nanoservice variable to the actor
-setValue (actorId, 'u', 0);         % set the Nanoservice variable value
+u = zeros(N,1);             % control signal u
+setValue (actorId, 'u', u(1), false); % set the Nanoservice variable value
 
-Kp = 0.4;                           % the proportional parameter Kp
-tryAddVariable (actorId, 'Kp', Kp); % add (if not yet added) the Nanoservice variable to the actor
-setValue (actorId, 'Kp', Kp);       % set the Nanoservice variable value
+% You can tune Kp, Ki, and Kd for better performance
 
-Ki = 0.2;                           % the integral parameter Ki
-tryAddVariable (actorId, 'Ki', Ki); % add (if not yet added) the Nanoservice variable to the actor
-setValue (actorId, 'Ki', Ki);       % set the Nanoservice variable value
+Kp = 0.14;                  % the proportional parameter Kp
+setValue (actorId, 'Kp', Kp, false);  % set the Nanoservice variable value
 
-Kd = 0.1;                           % the derivative parameter Kd
-tryAddVariable (actorId, 'Kd', Kd); % add (if not yet added) the Nanoservice variable to the actor
-setValue (actorId, 'Kd', Kd);       % set the Nanoservice variable value
+Ki = 0.2;                   % the integral parameter Ki
+setValue (actorId, 'Ki', Ki, false);  % set the Nanoservice variable value
 
-tryAddVariable (actorId, 'previousError', 0);   % add (if not yet added) the Nanoservice variable "previousError"
-setValue (actorId, 'previousError', 0);         % set the Nanoservice variable value
+Kd = 0.12;                  % the derivative parameter Kd
+setValue (actorId, 'Kd', Kd, false);  % set the Nanoservice variable value
 
-tryAddVariable (actorId, 'sumError', 0);        % add (if not yet added) the Nanoservice variable "sumError"
-setValue (actorId, 'sumError', 0);              % set the Nanoservice variable value
+setValue (actorId, 'previousError', 0, false);  % set the Nanoservice variable value
+setValue (actorId, 'sumError', 0, false);  % set the Nanoservice variable value
 
 for n= 2:N
     pause (timePaused)
@@ -53,9 +49,8 @@ for n= 2:N
     % simulate x which takes control signal u as an input
     x(n) =0.4*u(n-1)+0.6*x(n-1) + d(n);
     
-    setValue (actorId, 'r', r(n));  % set the Nanoservice variable value
-    setValue (actorId, 'x', x(n));  % set the Nanoservice variable value
-    
+    setValue (actorId, 'r', r(n), false);  % set the Nanoservice variable value
+    setValue (actorId, 'x', x(n), true);  % set the Nanoservice variable value
     % call the PID Nanoservice (Azure Function) which returns control signal u(n)
     tic;
     uStruct = getValue (actorId, 'u'); 
@@ -75,24 +70,29 @@ plot (1:N, timeCom, '*')
 xlabel('time (n)');
 ylabel('round-trip time (second)');
 
-- tryAddVariable.m -
 function response = tryAddVariable(actorId, variable, value)
-requestUri = ['http://csmlab7.uconn.edu/addVariable'];
+% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+requestUri = [baseNanoserviceUri '/tryAddVariable'];
 data = struct('actorId', actorId, 'variable',variable, 'value', value);
 options = weboptions('MediaType','application/json', 'Timeout', 100);
-response = webwrite(requestUri,data, options);
+response = webwrite(requestUri, data, options);
+end
 
-- getValue.m -
 function value = getValue(actorId, variable)
-requestUri = ['http://csmlab7.uconn.edu/getValue'];
-data = struct('actorId', actorId, 'variable',variable);
+% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+requestUri = [baseNanoserviceUri '/getValue'];
+data = struct('actorId', actorId, 'variable', variable);
 options = weboptions('MediaType','application/json', 'Timeout', 100);
-value = webwrite(requestUri,data, options);
+value = webwrite(requestUri, data, options);
+end
 
-- setValue.m - 
-function response = setValue(actorId, variable, value)
-requestUri = 'http://csmlab7.uconn.edu/setValue';
-data = struct('actorId', actorId, 'variable',variable, 'value', value);
-options = weboptions('MediaType','application/json', 'Timeout', 100);
-%response = webwrite(requestUri,data);
-response = webwrite(requestUri,data,options);
+function response = setValue(actorId, variable, value, publish)
+% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+requestUri = [baseNanoserviceUri '/setValue'];
+data = struct('actorId', actorId, 'variable', variable, 'value', value, 'publish', publish);
+options = weboptions('MediaType', 'application/json', 'Timeout', 100);
+response = webwrite(requestUri, data, options);
+end
