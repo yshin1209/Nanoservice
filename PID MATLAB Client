@@ -45,8 +45,6 @@ for n= 2:N
     
     % simulate x which takes control signal u as an input
     x(n) =0.4*u(n-1)+0.6*x(n-1) + d(n);
-    disp('x')
-    disp(x(n))
     
     % set the Nanoservice variable value
     setValue (actorId, 'r', r(n), false); 
@@ -94,6 +92,3 @@ data = struct('actorId', actorId, 'variable', variable, 'value', value, 'publish
 options = weboptions('MediaType', 'application/json', 'Timeout', 100);
 response = webwrite(requestUri, data, options);
 end
-
-
-    
