@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
-using Newtonsoft.Json.Linq;
 
 namespace Actors.Interfaces
 {

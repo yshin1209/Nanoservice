@@ -13,8 +13,8 @@ using System.Collections.Generic;
 
 namespace NanoserviceAPI.Controllers
 {
-    [Consumes("application/json")]
-    [Produces("application/json")]
+    //[Consumes("application/json")]
+    //[Produces("application/json")]
     public class ActorsController : Controller
     {
         /// <summary>
@@ -87,7 +87,7 @@ namespace NanoserviceAPI.Controllers
             JTokenType valueType = requestBody.SelectToken("value").Type;
             dynamic value = "arbitrary value"; // initialize dynamic type value
             switch (valueType)
-            {   //Float should come before Int to handle "0"
+            {   
                 case JTokenType.Float:
                     value = (float)requestBody.SelectToken("value");
                     break;
@@ -150,31 +150,33 @@ namespace NanoserviceAPI.Controllers
         ///     {
         ///        "actorId": "patient032904475",    
         ///        "variable": "bloodSodium",              
-        ///        "value": 109                      
+        ///        "value": 109,
+        ///        "publish": true
         ///     }
         /// 
         /// - "actionId": string
         /// - "variable": string
         /// - "value": string, int, float, bool
+        /// - "publish": bool
         /// 
         /// Try this service:
         /// 
         /// 1. Click [Try it out] button (white).
         /// 2. Type your request body into "Example Value  | Model" textbox (white). A sample request body is shown above.
         /// 3. Click [Execute] button (blue).
-        /// 4. Check "Response body" (ignore "Code" for now). If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage.
+        /// 4. Check "Response body" (ignore "Code" for now). If an actor variable with specified name does not exist, it is added. If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage. 
         /// </remarks>
 
         [HttpPost]
         [Route("setValue")]
-        public async Task<string> SetValue ([FromBody] JObject requestBody)
+        public async Task<dynamic> SetValue ([FromBody] dynamic requestBody)
         {
             var actorId = (string)requestBody.SelectToken("actorId");
             var variable = (string) requestBody.SelectToken("variable");
             JTokenType valueType = requestBody.SelectToken("value").Type;
             dynamic value = "any value"; // initialize dynamic type value
             switch (valueType)
-            {   //Float should come before Int to handle "0"
+            {   
                 case JTokenType.Float:
                     value = (float)requestBody.SelectToken("value");
                     break;
@@ -190,8 +192,12 @@ namespace NanoserviceAPI.Controllers
             }
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            string response = await actor.SetValueAsync(variable, value);
-            PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
+            string response = await actor.SetValueAsync(variable, value, true);
+            var publish = (bool)requestBody.SelectToken("publish");
+            if (publish == true)
+            {
+                await PublishToAzureEventGridAsync(requestBody); // publish to Azure Event Grid
+            }
             return response;
         }
         /// <summary>
@@ -226,12 +232,12 @@ namespace NanoserviceAPI.Controllers
             return response;
         }
 
-        public void PublishToAzureEventGridAsync(JObject data)
+        public async Task PublishToAzureEventGridAsync(JObject data)
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
-            string AzureEventGridTopicAccessKey = "9UGRYFbXX3Pqr8yTp2vvhgvNBr8HO0HSWza/PMdxu/0=";
-            //string publisherBaseUri = "http://nanoservice.eastus.cloudapp.azure.com/";
-            string publisherBaseUri = "http://csmlab7.uconn.edu";
+            string AzureEventGridTopicAccessKey = "bHLip04YkH3Ysh0WvISAEUINVk3BWcPGTqGB6t/0iQw=";
+            string publisherBaseUri = "http://nanoservice3.eastus.cloudapp.azure.com/";
+            //string publisherBaseUri = "http://csmlab7.uconn.edu";
             string uri = AzureEventGridTopicEndPoint;
             string topicSubject = (string)data.SelectToken("variable");
 
@@ -251,12 +257,14 @@ namespace NanoserviceAPI.Controllers
             List<dynamic> requestBodyArray = new List<dynamic>();
             requestBodyArray.Add(requestBody);
 
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("aeg-sas-key", AzureEventGridTopicAccessKey);
-            var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
-            request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
-            var response = client.SendAsync(request);
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("aeg-sas-key", AzureEventGridTopicAccessKey);
+                var request = new HttpRequestMessage(HttpMethod.Post, uri);
+                string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
+                request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+                await client.SendAsync(request);
+            }
         }
     }
 }
