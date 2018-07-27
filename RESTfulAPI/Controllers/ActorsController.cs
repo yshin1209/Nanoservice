@@ -192,7 +192,7 @@ namespace NanoserviceAPI.Controllers
             }
 
             var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            string response = await actor.SetValueAsync(variable, value, true);
+            string response = await actor.SetValueAsync(variable, value);
             var publish = (bool)requestBody.SelectToken("publish");
             if (publish == true)
             {
@@ -236,8 +236,8 @@ namespace NanoserviceAPI.Controllers
         {
             string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
             string AzureEventGridTopicAccessKey = "bHLip04YkH3Ysh0WvISAEUINVk3BWcPGTqGB6t/0iQw=";
-            string publisherBaseUri = "http://nanoservice3.eastus.cloudapp.azure.com/";
-            //string publisherBaseUri = "http://csmlab7.uconn.edu";
+            //string publisherBaseUri = "http://nanoservice3.eastus.cloudapp.azure.com/";
+            string publisherBaseUri = "http://csmlab7.uconn.edu";
             string uri = AzureEventGridTopicEndPoint;
             string topicSubject = (string)data.SelectToken("variable");
 
