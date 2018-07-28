@@ -6,7 +6,7 @@ clc
 clear all
 close all
 timePaused = 0;             % time paused between each iteration in second
-actorId = 'actor11';        % new Service Fabric Actor ID
+actorId = 'actor2';        % new Service Fabric Actor ID
 
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
 setValue (actorId, 'r', r(1), false); % set the Nanoservice variable value
@@ -22,40 +22,46 @@ u = zeros(N,1);             % control signal u
 setValue (actorId, 'u', u(1), false); % set the Nanoservice variable value
 
 % You can tune Kp, Ki, and Kd for better performance
-
-Kp = 0.14;                  % the proportional parameter Kp
+Kp = 0.2;                  % the proportional parameter Kp
 setValue (actorId, 'Kp', Kp, false);  % set the Nanoservice variable value
 
-Ki = 0.2;                   % the integral parameter Ki
+Ki = 0.12;                   % the integral parameter Ki
 setValue (actorId, 'Ki', Ki, false);  % set the Nanoservice variable value
 
-Kd = 0.12;                  % the derivative parameter Kd
+Kd = 0.1;                  % the derivative parameter Kd
 setValue (actorId, 'Kd', Kd, false);  % set the Nanoservice variable value
 
 setValue (actorId, 'previousError', 0, false);  % set the Nanoservice variable value
 setValue (actorId, 'sumError', 0, false);  % set the Nanoservice variable value
 
-for n= 2:N
-    pause (timePaused)
-    disp('iteration')
-    n
+
+for n= 2:N                  % discrete time index n
+    pause (timePaused);     % default = 0 sec
     
-    % add disturbance with magnitude 50 to x at time > 60
+    % add disturbance with magnitude 50 to x at n > 60
     if n > 60
-        d(n) = 50;  % disturbance magnitude
+        d(n) = 50;          % disturbance magnitude
     else d(n) = 0;
     end
     
     % simulate x which takes control signal u as an input
     x(n) =0.4*u(n-1)+0.6*x(n-1) + d(n);
     
-    setValue (actorId, 'r', r(n), false);  % set the Nanoservice variable value
-    setValue (actorId, 'x', x(n), true);  % set the Nanoservice variable value
+    % set the Nanoservice variable value
+    setValue (actorId, 'r', r(n), false); 
+    
+    % set the Nanoservice variable value
+    setValue (actorId, 'x', x(n), true);   
+    
+    % start the timer for the round-trip between the client and the cloud
+    tic; 
+    
     % call the PID Nanoservice (Azure Function) which returns control signal u(n)
-    tic;
-    uStruct = getValue (actorId, 'u'); 
+    uStruct = getValue (actorId, 'u');
     u(n) = extractfield(uStruct,"value");
-    timeCom(n) = toc; % time for the round-trip between the client and the cloud
+
+    % stop the timer
+    timeCom(n) = toc; 
 end
 
 subplot(2,1,1);
@@ -70,18 +76,9 @@ plot (1:N, timeCom, '*')
 xlabel('time (n)');
 ylabel('round-trip time (second)');
 
-function response = tryAddVariable(actorId, variable, value)
-% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
-baseNanoserviceUri = 'http://csmlab7.uconn.edu';
-requestUri = [baseNanoserviceUri '/tryAddVariable'];
-data = struct('actorId', actorId, 'variable',variable, 'value', value);
-options = weboptions('MediaType','application/json', 'Timeout', 100);
-response = webwrite(requestUri, data, options);
-end
-
 function value = getValue(actorId, variable)
-% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
-baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+%baseNanoserviceUri = 'http://csmlab7.uconn.edu';
 requestUri = [baseNanoserviceUri '/getValue'];
 data = struct('actorId', actorId, 'variable', variable);
 options = weboptions('MediaType','application/json', 'Timeout', 100);
@@ -89,8 +86,8 @@ value = webwrite(requestUri, data, options);
 end
 
 function response = setValue(actorId, variable, value, publish)
-% baseNanoserviceUri = 'http://nanoservice.eastus.cloudapp.azure.com';
-baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+%baseNanoserviceUri = 'http://csmlab7.uconn.edu';
 requestUri = [baseNanoserviceUri '/setValue'];
 data = struct('actorId', actorId, 'variable', variable, 'value', value, 'publish', publish);
 options = weboptions('MediaType', 'application/json', 'Timeout', 100);
