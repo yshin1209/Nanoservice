@@ -1,0 +1,52 @@
+% test x5values10min
+clc
+clear all
+close all
+actorId = 'actor2';        % new Service Fabric Actor ID
+setValue (actorId, 'xCurrent', 0, false);
+setValue (actorId, 'x10minOld', 0, false);
+setValue (actorId, 'x20minOld', 0, false);
+setValue (actorId, 'x30minOld', 0, false);
+setValue (actorId, 'x40minOld', 0, false);
+
+setValue (actorId, 'x', 1.3, true);
+setValue (actorId, 'x', 2.3, true);
+setValue (actorId, 'x', 3.3, true);
+setValue (actorId, 'x', 4.3, true);
+setValue (actorId, 'x', 5.3, true);
+
+pause(1)
+%%
+xCurrent = getValue (actorId, 'xCurrent');
+xCurrentValue = extractfield(xCurrent,"value");
+disp (xCurrentValue);
+x10minOld = getValue (actorId, 'x10minOld');
+x10minOldValue = extractfield(x10minOld,"value");
+disp (x10minOldValue);
+x20minOld = getValue (actorId, 'x20minOld');
+x20minOldValue = extractfield(x20minOld,"value");
+disp (x20minOldValue);
+x30minOld = getValue (actorId, 'x30minOld');
+x30minOldValue = extractfield(x30minOld,"value");
+disp (x30minOldValue);
+x40minOld = getValue (actorId, 'x40minOld');
+x40minOldValue = extractfield(x40minOld,"value");
+disp (x40minOldValue);
+
+function value = getValue(actorId, variable)
+%baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+requestUri = [baseNanoserviceUri '/getValue'];
+data = struct('actorId', actorId, 'variable', variable);
+options = weboptions('MediaType','application/json', 'Timeout', 100);
+value = webwrite(requestUri, data, options);
+end
+
+function response = setValue(actorId, variable, value, publish)
+%baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+requestUri = [baseNanoserviceUri '/setValue'];
+data = struct('actorId', actorId, 'variable', variable, 'value', value, 'publish', publish);
+options = weboptions('MediaType', 'application/json', 'Timeout', 100);
+response = webwrite(requestUri, data, options);
+end
