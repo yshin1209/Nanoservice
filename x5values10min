@@ -1,0 +1,67 @@
+// previous 5 x values (10-min interval)
+
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Dynamic;
+using System.Net.Http;
+using System.Text;
+
+public static void Run(JObject eventGridEvent, TraceWriter log)
+{
+    string actorId = (string)eventGridEvent["data"]["actorId"];
+    double x = (double)eventGridEvent["data"]["value"];
+    log.Info("x " + x.ToString());
+    string publisherBaseUri = (string)eventGridEvent["data"]["publisherBaseUri"];
+    string getRequestUri = publisherBaseUri + "/getValue";
+    string setRequestUri = publisherBaseUri + "/setValue";
+    var x40minOld = GetValue(actorId, getRequestUri, "x30minOld");
+    log.Info("x30minOld " + x40minOld.ToString());
+    SetValue(actorId, setRequestUri, "x40minOld", x40minOld);
+    var x30minOld = GetValue(actorId, getRequestUri, "x20minOld");
+    SetValue(actorId, setRequestUri, "x30minOld", x30minOld);
+    var x20minOld = GetValue(actorId, getRequestUri, "x10minOld");
+    SetValue(actorId, setRequestUri, "x20minOld", x20minOld);
+    var x10minOld = GetValue(actorId, getRequestUri, "xCurrent");
+    SetValue(actorId, setRequestUri, "x10minOld", x10minOld);
+    SetValue(actorId, setRequestUri, "xCurrent", x);
+    var xCurrent = GetValue(actorId, getRequestUri, "xCurrent");
+    log.Info("xCurrent " + xCurrent.ToString());
+}
+
+//GetValue
+public static dynamic GetValue (string actorId, string requestUri, string variable)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        var response = client.SendAsync(request).Result;
+        var stringResponseTask = response.Content.ReadAsStringAsync();
+        JObject jObj = JObject.Parse(stringResponseTask.Result);
+        var value = (dynamic)jObj["value"];
+        return value;
+    }
+}
+
+//SetValue
+public async static Task SetValue (string actorId, string requestUri, string variable, dynamic value)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        requestBody.value = value;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        await client.SendAsync(request);
+    }
+}
