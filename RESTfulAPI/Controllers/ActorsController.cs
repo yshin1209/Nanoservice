@@ -18,96 +18,6 @@ namespace NanoserviceAPI.Controllers
     public class ActorsController : Controller
     {
         /// <summary>
-        /// Creates an actor.
-        /// </summary>
-        /// <remarks>
-        /// Sample request body (requestBody):
-        ///
-        ///     {
-        ///        "actorId": "patient032904475" 
-        ///     }
-        ///     
-        /// - "actionId": string
-        /// 
-        /// Try this service:
-        ///
-        /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
-        /// 3. Click [Execute] button (blue).
-        /// 4. Check "Response body" (ignore "Code" for now). If you see "Actor created", your request is processed successfully. Otherwise, you will get an error messsage.
-        /// 
-        /// For more information about Service Fabric Actors, please see:
-        /// https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-actors-introduction
-        /// </remarks>
-        [HttpPost]
-        [Route("createActor")]
-        public string CreateActor([FromBody] JObject requestBody)
-        {
-            try
-            {
-                var actorId = (string)requestBody.SelectToken("actorId");
-                var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-                return ("Actor created");
-            }
-            catch (Exception e)
-            {
-                return e.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Adds a variable to an actor. 
-        /// </summary>
-        /// <remarks>
-        /// Sample request body (requestBody):
-        ///
-        ///     {
-        ///        "actorId": "patient032904475",    
-        ///        "variable": "bloodSodium",              
-        ///        "value": "unknown"                     
-        ///     }
-        /// 
-        /// - "actionId": string
-        /// - "variable": string
-        /// - "value": string, int, float, bool
-        /// 
-        /// Try this service:
-        /// 
-        /// 1. Click [Try it out] button (white).
-        /// 2. Type your request body into "Example Value | Model" textbox (white). A sample request body is shown above.
-        /// 3. Click [Execute] button (blue).
-        /// 4. Check "Response body" (ignore "Code" for now). Returns true if the value was successfully added and false if an actor state with the same name already exists.
-        /// </remarks>
-        [HttpPost]
-        [Route("tryAddVariable")]
-        public async Task<dynamic> TryAddVariable([FromBody] JObject requestBody)
-        {
-            var actorId = (string) requestBody.SelectToken("actorId");
-            var variable = (string) requestBody.SelectToken("variable");
-            JTokenType valueType = requestBody.SelectToken("value").Type;
-            dynamic value = "arbitrary value"; // initialize dynamic type value
-            switch (valueType)
-            {   
-                case JTokenType.Float:
-                    value = (float)requestBody.SelectToken("value");
-                    break;
-                case JTokenType.Boolean:
-                    value = (bool)requestBody.SelectToken("value");
-                    break;
-                case JTokenType.Integer:
-                    value = (int)requestBody.SelectToken("value");
-                    break;
-                case JTokenType.String:
-                    value = (string)requestBody.SelectToken("value");
-                    break;
-            }
-
-            var actor = ActorProxy.Create<IActors>(new ActorId(actorId), new Uri("fabric:/Nanoservice/ActorsActorService"));
-            var response = await actor.TryAddVariableAsync(variable, value);
-            return response;
-        }
-
-        /// <summary>
         /// Gets the value of a variable.
         /// </summary>
         /// <remarks>
@@ -118,7 +28,7 @@ namespace NanoserviceAPI.Controllers
         ///        "variable": "bloodSodium"                  
         ///     }
         /// 
-        /// - "actionId": string
+        /// - "actorId": string
         /// - "variable": string
         /// 
         /// Try this service:
@@ -169,14 +79,14 @@ namespace NanoserviceAPI.Controllers
 
         [HttpPost]
         [Route("setValue")]
-        public async Task<dynamic> SetValue ([FromBody] dynamic requestBody)
+        public async Task<dynamic> SetValue([FromBody] dynamic requestBody)
         {
             var actorId = (string)requestBody.SelectToken("actorId");
-            var variable = (string) requestBody.SelectToken("variable");
+            var variable = (string)requestBody.SelectToken("variable");
             JTokenType valueType = requestBody.SelectToken("value").Type;
             dynamic value = "any value"; // initialize dynamic type value
             switch (valueType)
-            {   
+            {
                 case JTokenType.Float:
                     value = (float)requestBody.SelectToken("value");
                     break;
