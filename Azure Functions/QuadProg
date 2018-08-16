@@ -1,0 +1,41 @@
+
+// QuadProg
+// Quadratic Programming in C#
+// http://crsouza.com/2012/04/05/quadratic-programming-in-c/
+
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using Accord.Math.Optimization;
+
+public static string Run(JObject eventGridEvent, TraceWriter log)
+{
+    JArray jobjQ = (JArray)eventGridEvent["data"]["Q"];
+    string jsonQ = JsonConvert.SerializeObject (jobjQ);
+    double[,] Q = JsonConvert.DeserializeObject<double[,]>(jsonQ);
+
+    JArray jobjD = (JArray)eventGridEvent["data"]["d"];
+    string jsonD = JsonConvert.SerializeObject (jobjD);
+    double[] d = JsonConvert.DeserializeObject<double[]>(jsonD);
+
+    JArray jobjA = (JArray)eventGridEvent["data"]["A"];
+    string jsonA = JsonConvert.SerializeObject (jobjA);
+    double[,] A = JsonConvert.DeserializeObject<double[,]>(jsonA);
+    
+    JArray jobjB = (JArray)eventGridEvent["data"]["b"];
+    string jsonB = JsonConvert.SerializeObject (jobjB);
+    double[] b = JsonConvert.DeserializeObject<double[]>(jsonB);
+
+    int m =(int)eventGridEvent["data"]["m"];
+
+    var solver = new GoldfarbIdnani(Q, d, A, b, m);
+    bool success = solver.Minimize();
+    double value = solver.Value;    
+    double x = solver.Solution[0];  
+    double y = solver.Solution[1];  
+
+    log.Info(value.ToString());
+    return value.ToString();
+}
