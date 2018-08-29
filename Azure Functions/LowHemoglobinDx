@@ -1,0 +1,100 @@
+// LowHemoglobinDx
+// Azure Event Grid topic prefix: hemoglobin
+// Yong-Jun Shin
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Dynamic;
+using System.Net.Http;
+using System.Text;
+
+public async static Task Run(JObject eventGridEvent, TraceWriter log)
+{
+    log.Info(eventGridEvent.ToString(Formatting.Indented));
+    var jsonEventGridEvent = eventGridEvent.ToString();
+    JObject jobj = JObject.Parse (jsonEventGridEvent);
+    double hemoglobinValue = (double)jobj["data"]["value"];
+    string actorId = (string)jobj["data"]["actorId"];
+    string publisherBaseUri = (string)jobj["data"]["publisherBaseUri"];
+    string variable = "lowHemoglobin";
+    string value = "unknown";
+    string nextBotStatement = "";
+
+    string getValueUri = publisherBaseUri + "/getValue";
+    string gender = GetValue(actorId, getValueUri, "gender");
+    log.Info("gender " + gender);
+    int age = GetValue(actorId, getValueUri, "age");
+    log.Info("age " + age);
+    string publish = "";
+    var threshold = 0.0;
+
+
+    if (age <= 18)
+    {
+        threshold = 11;
+    } else if (age > 18)
+    {
+        if (gender == "female")
+        {
+            threshold = 12;
+        } else if (gender == "male")
+        {
+            threshold = 13;
+        }
+    }
+
+    if (hemoglobinValue < threshold) 
+    {
+        value = "yes"; 
+        publish = "yes";
+        nextBotStatement  = "Your hemoglobin is low.";
+    }
+    else if (hemoglobinValue >= threshold) 
+    {
+        value = "no";
+        publish = "no";
+        nextBotStatement  = "Your hemoglobin is not low.";
+    }
+    string setValueUri = publisherBaseUri + "/setValue";  
+    await SetValue(actorId, setValueUri, variable, value, publish);
+    await SetValue(actorId, setValueUri, "nextBotStatement", nextBotStatement, publish);
+}
+
+//GetValue
+public static dynamic GetValue (string actorId, string requestUri, string variable)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        var response = client.SendAsync(request).Result;
+        var stringResponseTask = response.Content.ReadAsStringAsync();
+        JObject jObj = JObject.Parse(stringResponseTask.Result);
+        var value = (dynamic)jObj["value"];
+        return value;
+    }
+}
+
+//SetValue
+public async static Task SetValue (string actorId, string requestUri, string variable, dynamic value, string publish)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        requestBody.value = value;
+        requestBody.publish = publish;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        await client.SendAsync(request);
+    }
+}
+
