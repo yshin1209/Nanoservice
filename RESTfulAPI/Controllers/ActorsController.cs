@@ -31,7 +31,7 @@ namespace NanoserviceAPI.Controllers
         ///        "publish": "yes"
         ///     }
         /// 
-        /// - "actionId": string
+        /// - "actorId": string
         /// - "variable": string
         /// - "value": string, int, float, bool
         /// - "publish": string
@@ -43,11 +43,12 @@ namespace NanoserviceAPI.Controllers
         /// 3. Click [Execute] button (blue).
         /// 4. Check "Response body". If you see "Value set", your request is processed successfully. Otherwise, you will get an error messsage. 
         /// 5. If the actorID or variable does not exist, it is automatically created.
+        /// 6. If "publish" is "yes", "actorId", "variable", and "value" are published to an Azure Event Grid topic ("topic").
         /// </remarks>
 
         [HttpPost]
         [Route("setValue")]
-        public async Task<dynamic> SetValue([FromBody] dynamic requestBody)
+        public async Task<dynamic> SetValue([FromBody] JObject requestBody)
         {
             var actorId = (string)requestBody.SelectToken("actorId");
             var variable = (string)requestBody.SelectToken("variable");
