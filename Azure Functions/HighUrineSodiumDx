@@ -1,0 +1,79 @@
+// HighUrineSodiumDx
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Dynamic;
+using System.Net.Http;
+using System.Text;
+
+public async static Task Run(JObject eventGridEvent, TraceWriter log)
+{
+    log.Info(eventGridEvent.ToString(Formatting.Indented));
+    var jsonEventGridEvent = eventGridEvent.ToString();
+    JObject jobj = JObject.Parse (jsonEventGridEvent);
+    string actorId = (string)jobj["data"]["actorId"];
+    string publisherBaseUri = (string)eventGridEvent["data"]["publisherBaseUri"];
+    string superState = (string)eventGridEvent["data"]["variable"];
+    string variable = "highUrineSodium";
+    string value = "unknown";
+    string publish = "no";
+    string hyponatremiaDDx = "unknown";
+    //Get the value of "serumOsmolarity"
+    string getValueUri = publisherBaseUri + "/getValue";
+    var urineSodiumValueString = GetValue(actorId, getValueUri, "urineSodium");
+    var urineSodiumValue = Convert.ToDouble(urineSodiumValueString);
+    if (urineSodiumValue > 20) 
+    {
+        value = "true"; 
+        if (superState == "hypovolemia") hyponatremiaDDx = "Diagnosis3";
+        if (superState == "hypervolemia") hyponatremiaDDx = "Diagnosis5";
+    }
+    if (urineSodiumValue <= 20)
+    {
+        value = "false"; 
+        if (superState == "hypovolemia") hyponatremiaDDx = "Diagnosis4";
+        if (superState == "hypervolemia") hyponatremiaDDx = "Diagnosis6";
+    }
+    //Set the value of "highUrineSodium"
+    string setValueUri = publisherBaseUri + "/setValue";   
+    await SetValue(actorId, setValueUri, variable, value, publish);
+    await SetValue(actorId, setValueUri, "hyponatremiaDDx", hyponatremiaDDx, publish);
+}
+
+//GetValue
+public static dynamic GetValue (string actorId, string requestUri, string variable)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        var response = client.SendAsync(request).Result;
+        var stringResponseTask = response.Content.ReadAsStringAsync();
+        JObject jObj = JObject.Parse(stringResponseTask.Result);
+        var value = (dynamic)jObj["value"];
+        return value;
+    }
+}
+
+//SetValue
+public async static Task SetValue (string actorId, string requestUri, string variable, dynamic value, string publish)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        requestBody.value = value;
+        requestBody.publish = publish;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        await client.SendAsync(request);
+    }
+}

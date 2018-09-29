@@ -1,3 +1,5 @@
+//PID
+
 #r "Newtonsoft.Json"
 
 using Newtonsoft.Json;
@@ -7,17 +9,17 @@ using System.Dynamic;
 using System.Net.Http;
 using System.Text;
 
-
 public async static void Run(JObject eventGridEvent, TraceWriter log)
 {
     //log.Info(eventGridEvent.ToString(Formatting.Indented));
     string actorId = (string)eventGridEvent["data"]["actorId"];
+    //log.Info("actorId " + actorId.ToString());
     double x = (double)eventGridEvent["data"]["value"];
-    log.Info("x " + x.ToString());
-    //HttpClient client = new HttpClient();   
+    //log.Info("x " + x.ToString());
     string publisherBaseUri = (string)eventGridEvent["data"]["publisherBaseUri"];
     //GetValue 
     string requestUri = publisherBaseUri + "/getValue";
+    //log.Info("requestUri " + requestUri.ToString());;
     
     /*
     var r = GetValue(client, actorId, requestUri, "r");
@@ -35,16 +37,17 @@ public async static void Run(JObject eventGridEvent, TraceWriter log)
     var previousError = GetValue(actorId, requestUri, "previousError");
     var sumError = GetValue(actorId, requestUri, "sumError");
     
-    log.Info("r " + r.ToString());;
+    /*
     log.Info("Kp " + Kp.ToString());
     log.Info("Ki " + Ki.ToString());
     log.Info("Kd " + Kd.ToString());
     log.Info("previousError " + previousError.ToString());
     log.Info("sumError " + sumError.ToString());
+    */
 
     //PID control
     var currentError = r - x;
-    log.Info("currentError " + currentError);
+    //log.Info("currentError " + currentError);
 
     var diffError = previousError - currentError;
     var u = Kp * currentError + Ki * sumError + Kd * diffError;
@@ -62,7 +65,7 @@ public async static void Run(JObject eventGridEvent, TraceWriter log)
     SetValue(actorId, requestUri, "previousError", currentError);
     SetValue(actorId, requestUri, "sumError", sumError);
     SetValue(actorId, requestUri, "u", u);
-    log.Info("u " + u.ToString());
+    //log.Info("u " + u.ToString());
 }
 
 //GetValue

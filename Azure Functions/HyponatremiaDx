@@ -1,0 +1,45 @@
+//HyponatremiaDx
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Dynamic;
+using System.Net.Http;
+using System.Text;
+
+public async static Task Run(JObject eventGridEvent, TraceWriter log)
+{
+    log.Info(eventGridEvent.ToString(Formatting.Indented));
+    var jsonEventGridEvent = eventGridEvent.ToString();
+    JObject jobj = JObject.Parse (jsonEventGridEvent);
+    double bloodSodiumValue = (double)jobj["data"]["value"];
+    string actorId = (string)jobj["data"]["actorId"];
+    string publisherBaseUri = (string)jobj["data"]["publisherBaseUri"];
+    string variable = "hyponatremia";
+    string value = "unknown";
+    string publish = "no";
+    // If hyponatremia (bloodSodium < 135), publish becomes "yes" so that
+    // hypotonicityDx can be triggered
+    if (bloodSodiumValue < 135) {value = "true"; publish = "yes";}
+    if (bloodSodiumValue >= 135) {value = "false";}
+    string setValueUri = publisherBaseUri + "/setValue";  
+    await SetValue(actorId, setValueUri, variable, value, publish);
+}
+
+//SetValue
+public async static Task SetValue (string actorId, string requestUri, string variable, dynamic value, string publish)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        requestBody.value = value;
+        requestBody.publish = publish;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        await client.SendAsync(request);
+    }
+}
