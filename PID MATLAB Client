@@ -9,30 +9,30 @@ timePaused = 0;             % time paused between each iteration in second
 actorId = 'actor2';        % new Service Fabric Actor ID
 
 r = 60*sin(-pi:0.05:pi)+200;% reference (target) signal values
-setValue (actorId, 'r', r(1), false); % set the Nanoservice variable value
+setValue (actorId, 'r', r(1), 'no'); % set the Nanoservice variable value
 
 N = length(r);              % number of iteration
 timeCom = zeros(N,1);       % time for the round-trip between the client and the cloud
 d = zeros(N,1);             % disturbance signal d
 
 x = zeros(N,1);             % output (measured) signal x
-setValue (actorId, 'x', x(1), true); % set the Nanoservice variable value
+setValue (actorId, 'x', x(1), 'yes'); % set the Nanoservice variable value
 
 u = zeros(N,1);             % control signal u
-setValue (actorId, 'u', u(1), false); % set the Nanoservice variable value
+setValue (actorId, 'u', u(1), 'no'); % set the Nanoservice variable value
 
 % You can tune Kp, Ki, and Kd for better performance
 Kp = 0.2;                  % the proportional parameter Kp
-setValue (actorId, 'Kp', Kp, false);  % set the Nanoservice variable value
+setValue (actorId, 'Kp', Kp, 'no');  % set the Nanoservice variable value
 
 Ki = 0.12;                   % the integral parameter Ki
-setValue (actorId, 'Ki', Ki, false);  % set the Nanoservice variable value
+setValue (actorId, 'Ki', Ki, 'no');  % set the Nanoservice variable value
 
 Kd = 0.1;                  % the derivative parameter Kd
-setValue (actorId, 'Kd', Kd, false);  % set the Nanoservice variable value
+setValue (actorId, 'Kd', Kd, 'no');  % set the Nanoservice variable value
 
-setValue (actorId, 'previousError', 0, false);  % set the Nanoservice variable value
-setValue (actorId, 'sumError', 0, false);  % set the Nanoservice variable value
+setValue (actorId, 'previousError', 0, 'no');  % set the Nanoservice variable value
+setValue (actorId, 'sumError', 0, 'no');  % set the Nanoservice variable value
 
 
 for n= 2:N                  % discrete time index n
@@ -48,10 +48,10 @@ for n= 2:N                  % discrete time index n
     x(n) =0.4*u(n-1)+0.6*x(n-1) + d(n);
     
     % set the Nanoservice variable value
-    setValue (actorId, 'r', r(n), false); 
+    setValue (actorId, 'r', r(n), 'no'); 
     
     % set the Nanoservice variable value
-    setValue (actorId, 'x', x(n), true);   
+    setValue (actorId, 'x', x(n), 'yes');   
     
     % start the timer for the round-trip between the client and the cloud
     tic; 
@@ -77,8 +77,8 @@ xlabel('time (n)');
 ylabel('round-trip time (second)');
 
 function value = getValue(actorId, variable)
-baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
-%baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+%baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
 requestUri = [baseNanoserviceUri '/getValue'];
 data = struct('actorId', actorId, 'variable', variable);
 options = weboptions('MediaType','application/json', 'Timeout', 100);
@@ -86,8 +86,8 @@ value = webwrite(requestUri, data, options);
 end
 
 function response = setValue(actorId, variable, value, publish)
-baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
-%baseNanoserviceUri = 'http://csmlab7.uconn.edu';
+%baseNanoserviceUri = 'http://nanoservice3.eastus.cloudapp.azure.com';
+baseNanoserviceUri = 'http://csmlab7.uconn.edu';
 requestUri = [baseNanoserviceUri '/setValue'];
 data = struct('actorId', actorId, 'variable', variable, 'value', value, 'publish', publish);
 options = weboptions('MediaType', 'application/json', 'Timeout', 100);
