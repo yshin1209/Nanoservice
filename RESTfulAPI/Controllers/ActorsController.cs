@@ -147,7 +147,9 @@ namespace NanoserviceAPI.Controllers
 
         public async Task PublishToAzureEventGridAsync(JObject data)
         {
-            string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
+            https://topic.eastus-1.eventgrid.azure.net/api/events
+            // string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events?api-version=2018-01-01";
+            string AzureEventGridTopicEndPoint = "https://topic.eastus-1.eventgrid.azure.net/api/events";
             string AzureEventGridTopicAccessKey = "bHLip04YkH3Ysh0WvISAEUINVk3BWcPGTqGB6t/0iQw=";
             // [Warning] Be careful not to add "/" at the end of publisherBaseUri
             //string publisherBaseUri = "http://nanoservice3.eastus.cloudapp.azure.com";
@@ -178,7 +180,8 @@ namespace NanoserviceAPI.Controllers
                 var request = new HttpRequestMessage(HttpMethod.Post, uri);
                 string jsonRequestBody = JsonConvert.SerializeObject(requestBodyArray);
                 request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
-                await client.SendAsync(request);
+                //await client.SendAsync(request);
+                client.SendAsync(request);
             }
         }
     }
