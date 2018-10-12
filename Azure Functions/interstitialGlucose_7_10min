@@ -1,0 +1,68 @@
+// interstitialGlucose_7_10min
+// maintain 7 most recent interstitial glucose values measured every 10 minutes.
+// triggering event: interstitialGlucose (prefix)
+#r "Newtonsoft.Json"
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Dynamic;
+using System.Net.Http;
+using System.Text;
+
+public static void Run(JObject eventGridEvent, TraceWriter log)
+{
+    string actorId = (string)eventGridEvent["data"]["actorId"];
+    double interstitialGlucose = (double)eventGridEvent["data"]["value"];
+    string publisherBaseUri = (string)eventGridEvent["data"]["publisherBaseUri"];
+    string getRequestUri = publisherBaseUri + "/getValue";
+    string setRequestUri = publisherBaseUri + "/setValue";
+    var interstitialGlucose60minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose50minAgo");
+    SetValue(actorId, setRequestUri, "interstitialGlucose60minAgo", interstitialGlucose60minAgo);
+    var interstitialGlucose50minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose40minAgo");
+    SetValue(actorId, setRequestUri, "interstitialGlucose50minAgo", interstitialGlucose50minAgo);
+    var interstitialGlucose40minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose30minAgo");
+    SetValue(actorId, setRequestUri, "interstitialGlucose40minAgo", interstitialGlucose40minAgo);
+    var interstitialGlucose30minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose20minAgo");
+    SetValue(actorId, setRequestUri, "interstitialGlucose30minAgo", interstitialGlucose30minAgo);
+    var interstitialGlucose20minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose10minAgo");
+    SetValue(actorId, setRequestUri, "interstitialGlucose20minAgo", interstitialGlucose20minAgo);
+    var interstitialGlucose10minAgo = GetValue(actorId, getRequestUri, "interstitialGlucose");
+    SetValue(actorId, setRequestUri, "interstitialGlucose10minAgo", interstitialGlucose10minAgo);
+}
+
+//GetValue
+public static dynamic GetValue (string actorId, string requestUri, string variable)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        var response = client.SendAsync(request).Result;
+        var stringResponseTask = response.Content.ReadAsStringAsync();
+        JObject jObj = JObject.Parse(stringResponseTask.Result);
+        var value = (dynamic)jObj["value"];
+        return value;
+    }
+}
+
+//SetValue
+public async static Task SetValue (string actorId, string requestUri, string variable, dynamic value)
+{
+    using(var client = new HttpClient())
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        dynamic requestBody = new ExpandoObject();
+        requestBody.actorId = actorId;
+        requestBody.variable = variable;
+        requestBody.value = value;
+        string jsonRequestBody = JsonConvert.SerializeObject(requestBody);
+        request.Content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
+        await client.SendAsync(request);
+    }
+}
+
